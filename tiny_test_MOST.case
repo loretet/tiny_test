@@ -63,6 +63,14 @@
                         0.5e-4
                     ],
                     "geostrophic_wind": "geo_wind"
+                },
+                {
+                    "type": "sponge",
+                    "amplitudes": [0.01, 0.01, 0.01],
+                    "baseflow": 
+                      {
+                        "method": "user"
+                      }
                 }
             ],
             "boundary_conditions": [
