@@ -124,6 +124,13 @@
                             5
                         ]
                     }
+// for use with time-varying dirichlet:
+//                  {
+//                       "type": "user",
+//                       "zone_indices": [
+//                           5
+//                       ]
+//                   },
                 ],
                 "alphat":{
                     "nut_dependency": false,
