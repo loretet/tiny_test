@@ -13,6 +13,9 @@ contains
     u_geo = 10.0_rp
 
     user%initial_conditions => user_ic
+   ! For time-varying bottom bc (dirichlet):
+   ! user%compute => user_compute                                                                                                                                                                                                                                               
+   ! user%dirichlet_conditions => dirichlet_update
   end subroutine user_setup
 
   ! User defined initial condition
@@ -153,5 +156,35 @@ contains
     end if
  
   end function stp_fun
+
+  subroutine user_compute(time)
+      type(time_state_t), intent(in) :: time
+      real(kind=rp), pointer :: bc_value
+
+      bc_value => neko_const_registry%get_real_scalar("bc_value")
+
+      bc_value = 300 + 0.0001 * time%t
+
+  end subroutine user_compute
+
+  subroutine dirichlet_update(fields, bc, time)
+    type(field_list_t), intent(inout) :: fields
+    type(field_dirichlet_t), intent(in) :: bc
+    type(time_state_t), intent(in) :: time
+    integer i
+
+      if (fields%items(1)%ptr%name .eq. "temperature") then
+
+       associate(s => fields%items(1)%ptr)
+            do i = 1, bc%msk(0)
+               s%x(bc%msk(i), 1, 1, 1) = 300 + 0.0001 * time%t
+            end do
+            if (neko_bcknd_device .eq. 1) then
+               call device_memcpy(s%x, s%x_d, s%size(), &
+                     host_to_device, sync=.false.)
+            end if
+         end associate
+      end if
+  end subroutine dirichlet_update
 
 end module user
