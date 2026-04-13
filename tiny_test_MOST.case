@@ -125,9 +125,9 @@
                             5
                         ]
                     }
-// for use with time-varying dirichlet:
+// for use with time-varying dirichlet/neumann:
 //                  {
-//                       "type": "user",
+//                       "type": "user_dirichlet",
 //                       "zone_indices": [
 //                           5
 //                       ]
