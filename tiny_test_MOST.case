@@ -89,7 +89,7 @@
                     "mu": "mu",
                     "rho": "rho", 
 					"Pr": 1.0,
-                    "type_of_temp_bc": "neumann",
+                    "type_of_temp_bc": "neumann",  // or dirichlet!
                     "bottom_bc_flux_or_temp": "bc_value",
                     "g": "g_vector",
                     "z0": 0.1,
