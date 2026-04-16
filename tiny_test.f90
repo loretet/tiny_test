@@ -81,10 +81,11 @@ contains
          if (z .gt. zmin_spng) then
             fringe%x(i,1,1,1) = stp_fun( (z - zmin_spng)/delta_spng )
          end if
+
+         ubf%x(i,1,1,1) = u_geo
    
        end do
 
-       ubf = u_geo
        vbf = 0.0_rp
        wbf = 0.0_rp
 
