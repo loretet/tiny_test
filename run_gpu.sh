@@ -1,25 +1,31 @@
 #!/bin/bash -l                                                                                                                   
 #SBATCH -J neko_tiny_test_GPU                                                                                       
-# The partition                                                                                                                             
+# The partition (Dardel: gpu  LUMI: dev-g for tests and standard-g or small-g for the real runs)                                                                                                                             
 #SBATCH -p gpu                                                                                                                          
 # 1 hour wall-clock time will be given to this job                                                                  
-#SBATCH -t 00:05:00                                                                                                                         
+#SBATCH -t 0-00:05:00                                                                                                                         
 #SBATCH --nodes=1                                                                                                                       
 #SBATCH --ntasks-per-node=8                                                                                                             
 # Keep these two options are they are:
 #SBATCH --gpus-per-task=1                                                                                                                   
 #SBATCH --gpu-bind=closest            
 # Number of requested CPU cores:
-#SBATCH -c 4                                                                                                                        
+#SBATCH -c 4            
+# Project name (Dardel: naiss2025-1-5 or 2025-3-39  LUMI: project_465002526)
 #SBATCH -A naiss2025-1-5
 
+# LUMI:
+# ml CrayEnv cpe/23.09 craype-accel-amd-gfx90a rocm
 
-ml PrgEnv-cray
-ml rocm/6.2.4
-ml craype-accel-amd-gfx90a
+# Dardel:
+ml PrgEnv-cray rocm/6.2.4 craype-accel-amd-gfx90a
 
 if [ ! -d logfiles ]; then
     mkdir logfiles
+fi
+
+if [ ! -d output ]; then
+    mkdir output
 fi
 
 # export MPICH_GPU_SUPPORT_ENABLED=1                                                                                
@@ -29,4 +35,5 @@ export MPICH_GPU_SUPPORT_ENABLED=1
 
 d="$(date +%F_%H-%M-%S)"
 
-srun -u ./neko tiny_test_RL.case > logfiles/logfile.log${d}
+srun -u ./neko tiny_test.case > logfiles/logfile.log${d} 2>&1
+mv *0.* output/
