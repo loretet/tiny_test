@@ -1,0 +1,37 @@
+#!/bin/bash -l
+#SBATCH --job-name=Neko
+#SBATCH --partition=dev-g
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --gpus-per-node=8
+#SBATCH --time=0-00:05:00               # Run time (d-hh:mm:ss)
+#SBATCH --mail-type=all                 # Send email at begin and end of job
+#SBATCH -c 6
+#SBATCH --account=project_465002526
+
+ml CrayEnv cce/19.0.0 craype-accel-amd-gfx90a rocm/6.3.4 cray-python
+export JSON_INSTALL=/users/lorenzol/json-fortran/b
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JSON_INSTALL}/lib64/
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${JSON_INSTALL}/lib64/pkgconfig
+export LD_LIBRARY_PATH=$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
+
+cat << EOF > select_gpu
+#!/bin/bash
+
+export ROCR_VISIBLE_DEVICES=\$SLURM_LOCALID
+exec \$*
+EOF
+
+chmod +x ./select_gpu
+
+CPU_BIND="mask_cpu:7e000000000000,7e00000000000000"
+CPU_BIND="${CPU_BIND},7e0000,7e000000"
+CPU_BIND="${CPU_BIND},7e,7e00"
+CPU_BIND="${CPU_BIND},7e00000000,7e0000000000"
+
+export OMP_NUM_THREADS=2
+export MPICH_GPU_SUPPORT_ENABLED=1
+export NEKO_GS_STRTGY=3
+
+srun -u --cpu-bind=${CPU_BIND},verbose ./select_gpu ./neko abl_test.case >> log.debug 2>&1
+rm -rf ./select_gpu
