@@ -88,7 +88,7 @@
                     "kappa": 0.4,
                     "mu": "mu",
                     "rho": "rho", 
-					"time_dependent_temp_bc": true,
+					"time_dependent_temp_bc": false,
 					"Pr": 1.0,
                     "type_of_temp_bc": "neumann",  // or dirichlet!
                     "bottom_bc_flux_or_temp": "bc_value",
