@@ -89,6 +89,7 @@
                     "Pr": 0.1,
                     "mu": "mu",
                     "rho": "rho",  
+					"time_dependent_temp_bc": false,
                     "type_of_temp_bc": "neumann",
                     "bottom_bc_flux_or_temp": "bc_value",
                     "g": "g_vector",
