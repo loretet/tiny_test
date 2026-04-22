@@ -16,6 +16,13 @@ subroutine user_compute(time)
 
       bc_value = scalar_bc(time)
 
+      if (.not. associated(bc_value)) then
+          write(*,*) "FATAL ERROR: bc_value was not found in neko_const_registry,"
+          write(*,*) "Often happens if 'time_dependent_temp_bc' : false and .f90"
+          write(*,*) "file contains time-varying boundary condition."
+          error stop 1      
+      end if
+
    end subroutine user_compute
 
   subroutine neumann_update(fields, bc, time)
@@ -62,6 +69,12 @@ subroutine user_compute(time)
       bc_value => neko_const_registry%get_real_scalar("bc_value")
 
       bc_value = scalar_bc(time)
+      if (.not. associated(bc_value)) then
+          write(*,*) "FATAL ERROR: bc_value was not found in neko_const_registry,"
+          write(*,*) "Often happens if 'time_dependent_temp_bc' : false and .f90"
+          write(*,*) "file contains time-varying boundary condition."
+          error stop 1      
+      end if
 
    end subroutine user_compute
 
