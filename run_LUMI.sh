@@ -1,14 +1,18 @@
 #!/bin/bash -l
-#SBATCH --job-name=Neko_NONopenmpi
+#SBATCH --job-name=test_dp_openmp
 #SBATCH --account=project_465002526
-#SBATCH --time=0-00:05:00              
-#SBATCH --partition=dev-g
+#SBATCH --time=0-02:05:00              
+#SBATCH --partition=small-g
 #SBATCH --ntasks=8             # n. of nodes x 8. Modify only this for bigger runs
 #SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-task=1  
 #SBATCH -c 7                   # n. of processes per task. Keep to 7   
 #SBATCH --mail-user=lorenzo.luca.donati@misu.su.se
 #SBATCH --mail-type=all                
+
+CASE_FILE="abl_test.case"
+NEKO_COMP="neko_dp_openmp"
+OUTPUT_DIR="output_dp_openmp"
 
 ml CrayEnv cce/19.0.0 craype-accel-amd-gfx90a rocm/6.3.4 cray-python
 export OMP_NUM_THREADS=2
@@ -43,8 +47,8 @@ if [ ! -d logfiles ]; then
     mkdir logfiles
 fi
 
-if [ ! -d output_dp ]; then
-    mkdir output_dp
+if [ ! -d ${OUTPUT_DIR} ]; then
+    mkdir ${OUTPUT_DIR}
 fi
 
 cat << EOF > select_gpu
@@ -57,6 +61,6 @@ EOF
 chmod +x ./select_gpu
 
 d="$(date +%F_%H-%M-%S)"
-srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./neko_dp abl_test.case >> logfiles/log.run_${d} 2>&1
+srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_COMP} ${CASE_FILE} >> logfiles/log.run_${d} 2>&1
 rm -rf ./select_gpu
-
+mv *0.* ${OUTPUT_DIR}
