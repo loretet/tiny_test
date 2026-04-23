@@ -31,7 +31,7 @@
             "full_stress_formulation": true,
             "nut_field": "nut",
             "velocity_solver": {
-                "type": "coupled_cg",
+                "type": "coupled_cg",   // if on GPU, use "fused_coupled_cg"
                 "preconditioner": {
                     "type": "jacobi"
                 },
