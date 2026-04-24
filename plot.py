@@ -6,30 +6,33 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.dpi'] = 300
 import matplotlib.cm as cm
 import numpy as np
-from matplotlib.lines import Line2D
 
 # Load data
-base_path = "/projappl/project_465002526/lorenzol/Neko_v1_ABL_test_case"
-case_dirs = [
-    "output_sp",
-    "output_dp"
-]
-case_labels = ['SP', 'DP'] 
-case_paths = [os.path.join(
-    base_path,
-    case_dir
-) for case_dir in case_dirs]
+base_paths = [
+        "/cfs/klemming/projects/snic/abl-les-ldl/neko/shear_convection_abl/",
+    ]
+case_dict = {
+    "output_MOST_CPU" : "MOST",
+    "output_RL_CPU"   : "RL"
+}
 
-
+#%%
 # Settings
 savef = True
 plot_sample_lines = True
-cmap_name = 'viridis'
-batch_alpha = 0.6
+batch_alpha = 0.7
 mean_lw = 2.0
 mean_color = 'black'
-linestyles = ['-', '--', '-.', ':']
-cmap = plt.get_cmap(cmap_name)
+style_dict = {
+    "-": "viridis",
+    "--": "plasma",
+    "-.": "inferno",
+    ":": "cividis"
+}
+img_path = base_paths[0]
+
+#%%
+# Utility functions
 
 def get_metadata_str(data_full):
     # Calculate time metadata for the suptitle
@@ -48,6 +51,19 @@ def get_metadata_str(data_full):
 def add_custom_legend(ax):
     ax.legend(loc='best', fontsize=8)
 
+case_paths = [os.path.join(
+    base_paths[i],
+    case_dir
+) for i,case_dir in enumerate(case_dict.keys())] if len(base_paths) == len(case_dict) \
+                                                    else [
+                                                        os.path.join(
+                                                            base_paths[0], 
+                                                            case_dir
+                                                            ) for case_dir in case_dict.keys()
+                                                    ]
+case_labels = list(case_dict.values())
+linestyles = list(style_dict.keys())
+cmaps = [plt.get_cmap(cmap_name) for cmap_name in list(style_dict.values())]
 #%%
 
 
@@ -66,14 +82,15 @@ for idx, vars_to_plot in enumerate(fluid_vars):
         data_full = nk.csv_to_xr(f'{case_path}/fluid_stats0.csv')
         data_mean = data_full.mean(dim="time")
         n_times = data_full.sizes['time']
-        colors = cmap(np.linspace(0, 1, n_times))
+        cmap = cmaps[case_idx % len(cmaps)]
         linestyle = linestyles[case_idx % len(linestyles)]
+        colors = cmap(np.linspace(0, 1, n_times))
         
         for var in vars_to_plot:
             if plot_sample_lines:
                 for t_idx in range(n_times):
                     batch_data = data_full[var].isel(time=t_idx)
-                    ax.plot(batch_data, data_full.z, color=colors[t_idx], alpha=batch_alpha, linewidth=0.8)
+                    ax.plot(batch_data, data_full.z, color=colors[t_idx], alpha=batch_alpha, linewidth=0.8, ls=linestyle)
             
             label = case_label if var == vars_to_plot[0] else None
             ax.plot(
@@ -87,7 +104,7 @@ for idx, vars_to_plot in enumerate(fluid_vars):
 
 plt.tight_layout()
 if savef:
-    plt.savefig(f'{case_paths[0]}/fluid_stats.png')
+    plt.savefig(f'{img_path}/fluid_stats.png')
 
 #%% 
 
@@ -112,13 +129,14 @@ for idx, (var, title) in enumerate(zip(temp_vars, temp_titles)):
         )
         data_t_mean = data_t_full.mean(dim="time")
         n_times_t = data_t_full.sizes['time']
+        cmap = cmaps[case_idx % len(cmaps)]
         colors_t = cmap(np.linspace(0, 1, n_times_t))
         linestyle = linestyles[case_idx % len(linestyles)]
         
         if plot_sample_lines:
             for t_idx in range(n_times_t):
                 batch_data = data_t_full[var_name].isel(time=t_idx)
-                ax.plot(batch_data, data_t_full.z, color=colors_t[t_idx], alpha=batch_alpha, linewidth=0.8)
+                ax.plot(batch_data, data_t_full.z, color=colors_t[t_idx], alpha=batch_alpha, linewidth=0.8, ls=linestyle)
         
         label = case_label
         ax.plot(
@@ -132,7 +150,7 @@ for idx, (var, title) in enumerate(zip(temp_vars, temp_titles)):
 
 plt.tight_layout(rect=[0, 0.03, 1, 0.93])
 if savef:
-    plt.savefig(f'{case_paths[0]}/temperature_stats.png')
+    plt.savefig(f'{img_path}/temperature_stats.png')
 
 #%%
 
@@ -165,13 +183,14 @@ for scalar in scalar_files:
             )
             data_s_mean = data_s_full.mean(dim="time")
             n_times_s = data_s_full.sizes['time']
+            cmap = cmaps[case_idx % len(cmaps)]
             colors_s = cmap(np.linspace(0, 1, n_times_s))
             linestyle = linestyles[case_idx % len(linestyles)]
 
             if plot_sample_lines:
                 for t_idx in range(n_times_s):
                     batch_data = data_s_full[var_name].isel(time=t_idx)
-                    ax.plot(batch_data, data_s_full.z, color=colors_s[t_idx], alpha=batch_alpha, linewidth=0.8)
+                    ax.plot(batch_data, data_s_full.z, color=colors_s[t_idx], alpha=batch_alpha, linewidth=0.8, ls=linestyle)
 
             label = case_label
             ax.plot(
@@ -185,82 +204,5 @@ for scalar in scalar_files:
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.93])
     if savef:
-        plt.savefig(f'{case_paths[0]}/scalar_{scalar_name}_stats.png')
-#%%data_t_full = nk.csv_to_xr(
-        f'{case_path}/scalar_stats_temperature0.csv',
-        type="scalar", basic=True, height="z",
-        fluid_csv=f'{case_path}/fluid_stats0.csv'
-        )
-data_t_mean = data_t_full.mean(dim="time")
-
-n_times_t = data_t_full.sizes['time']
-colors_t = cmap(np.linspace(0, 1, n_times_t))
-
-temp_vars = [('s',), ('ss',), ('us',), ('vs',), ('ws',)]
-temp_titles = ['t', 'tt', 'tu', 'tv', 'tw']
-
-fig, axes = plt.subplots(2, 3, figsize=(15, 12))
-axes = axes.flatten()
-
-metadata_t = get_metadata_str(data_t_full)
-fig.suptitle(f"Temperature Statistics\n{metadata_t}", fontsize=14)
-
-for idx, (var, title) in enumerate(zip(temp_vars, temp_titles)):
-    ax = axes[idx]
-    ax.set_title(title)
-    var_name = var[0]
-    
-    for t_idx in range(n_times_t):
-        batch_data = data_t_full[var_name].isel(time=t_idx)
-        ax.plot(batch_data, data_t_full.z, color=colors_t[t_idx], alpha=batch_alpha)
-        
-    ax.plot(data_t_mean[var_name], data_t_mean.z, color=mean_color, linewidth=mean_lw)
-    add_custom_legend(ax, colors_t)
-
-plt.tight_layout(rect=[0, 0.03, 1, 0.93])
-if savef:
-    plt.savefig(f'{case_path}/temperature_stats.png')
-
-#%%
-
-# Passive scalar plots
-scalar_files = [f for f in os.listdir(case_path) if f.startswith('scalar_stats_') \
-                and f.endswith('0.csv') \
-                and 'sgs' not in f \
-                and 'temp' not in f
-            ]
-
-for scalar in scalar_files:
-    fig, axes = plt.subplots(2, 3, figsize=(15, 12))
-    axes = axes.flatten()
-    
-    data_s_full = nk.csv_to_xr(
-        f'{case_path}/{scalar}',
-        type="scalar", basic=True, height="z",
-        fluid_csv=f'{case_path}/fluid_stats0.csv'
-        )
-    data_s_mean = data_s_full.mean(dim="time")
-    
-    n_times_s = data_s_full.sizes['time']
-    colors_s = cmap(np.linspace(0, 1, n_times_s))
-    scalar_name = scalar.split('_')[2].split('0.csv')[0] 
-    
-    metadata_s = get_metadata_str(data_s_full)
-    fig.suptitle(f"Scalar: {scalar_name}\n{metadata_s}", fontsize=14)
-
-    for idx, (var, title) in enumerate(zip(temp_vars, temp_titles)):
-        ax = axes[idx]
-        ax.set_title(title)
-        var_name = var[0]
-        
-        for t_idx in range(n_times_s):
-            batch_data = data_s_full[var_name].isel(time=t_idx)
-            ax.plot(batch_data, data_s_full.z, color=colors_s[t_idx], alpha=batch_alpha)
-            
-        ax.plot(data_s_mean[var_name], data_s_mean.z, color=mean_color, linewidth=mean_lw)
-        add_custom_legend(ax, colors_s)
-        
-    plt.tight_layout(rect=[0, 0.03, 1, 0.93])
-    if savef:
-        plt.savefig(f'{case_path}/scalar_{scalar_name}_stats.png')
+        plt.savefig(f'{img_path}/scalar_{scalar_name}_stats.png')
 #%%
