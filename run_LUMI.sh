@@ -3,16 +3,28 @@
 #SBATCH --account=project_465002526
 #SBATCH --time=0-02:05:00              
 #SBATCH --partition=dev-g
-#SBATCH --ntasks=8             # n. of nodes = ntasks/8. Modify only this for bigger runs
-#SBATCH --ntasks-per-node=8
-#SBATCH --gpus-per-task=1  
-#SBATCH -c 7                   # n. of processes per task. Keep to 7   
-#SBATCH --mail-user=lorenzo.luca.donati@misu.su.se
-#SBATCH --mail-type=all                
+#SBATCH --nodes=1              # n. of nodes = ntasks/8. Modify only this for bigger runs
+#SBATCH --ntasks-per-node=8    # don't change this, it must be == to --gpus-per-node
+#SBATCH --gpus-per-node=8      # don't change this, it must be == to --ntasks-per-node  
+#SBATCH --cpus-per-task=7      # n. of processessors per task. Don't change this, it must be >= OMP_NUM_THREADS        
 
 CASE_FILE="abl_test.case"
-NEKO_COMP="neko_dp_openmp"
-OUTPUT_DIR="output_dp_openmp"
+NEKO_COMP="neko_dp"
+OUTPUT_DIR="output_dp"
+
+echo "Running Neko with the following settings:"
+echo "  Job Name: $SLURM_JOB_NAME"
+echo "  Account: $SLURM_ACCOUNT"
+echo "  Time Limit: $SLURM_TIME"
+echo "  Partition: $SLURM_PARTITION"
+echo "  Nodes: $SLURM_NNODES"
+echo "  Tasks per Node: $SLURM_NTASKS_PER_NODE"
+echo "  GPUs per Node: $SLURM_GPUS_PER_NODE"
+echo "  CPUs per Task: $SLURM_CPUS_PER_TASK"
+echo "  "
+echo "  Case File: $CASE_FILE"
+echo "  Neko Executable: $NEKO_COMP"
+echo "  Output Directory: $OUTPUT_DIR"
 
 ml CrayEnv cce/19.0.0 craype-accel-amd-gfx90a rocm/6.3.4 cray-python
 export OMP_NUM_THREADS=2
