@@ -18,7 +18,7 @@
 # ml CrayEnv cpe/23.09 craype-accel-amd-gfx90a rocm
 
 # Dardel:
-ml PrgEnv-cray rocm/6.2.4 craype-accel-amd-gfx90a
+ml craype-accel-amd-gfx90a rocm/6.3.3 PrgEnv-cray && module use /cfs/klemming/pdc/projects/hpcrd/modules && ml hpcrd json-fortran/8.3.0-cce-18.0.1-bjoug3p
 
 if [ ! -d logfiles ]; then
     mkdir logfiles
