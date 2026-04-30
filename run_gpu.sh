@@ -10,7 +10,7 @@
 #SBATCH --gpus-per-task=1                                                                                                                   
 #SBATCH --gpu-bind=closest            
 # Number of requested CPU cores:
-#SBATCH -c 4            
+#SBATCH -c 8            
 # Project name (Dardel: naiss2025-1-5 or 2025-3-39  LUMI: project_465002526)
 #SBATCH -A naiss2025-1-5
 
