@@ -1,6 +1,8 @@
+#%% Parse and plot diagnostics
 import re
-import xarray as xr
 import numpy as np
+import pandas as pd
+import xarray as xr
 
 # ------------------------------------------------------
 # Parser
@@ -106,11 +108,43 @@ def records_to_xarray(records, outfile="wall_model_diagnostics.nc"):
     return ds
 
 
+def plot_all_timeseries(ds, n_el_x=16, n_el_y=16, lx1=8):
+    """Plot every data variable in ds against time in subplots."""
+    vars_to_plot = list(ds.data_vars)
+    N_bdry = lx1*lx1*n_el_x*n_el_y
+    if not vars_to_plot:
+        return None
+
+    nvars = len(vars_to_plot)
+    cols = 3
+    rows = int(np.ceil(nvars / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(15, 10), squeeze=False)
+    axes_flat = axes.flatten()
+
+    for ax, var in zip(axes_flat, vars_to_plot):
+        if var in ["step", "CFL", "dt","bc_value"]:
+            ax.plot(ds["time"].values, ds[var].values)
+        else:
+            ax.plot(ds["time"].values, ds[var].values/N_bdry)
+        ax.set_title(var)
+        ax.set_xlabel("time")
+        ax.set_ylabel(var)
+        ax.grid(True)
+
+    for ax in axes_flat[nvars:]:
+        ax.set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+    return fig
+
+
 # ------------------------------------------------------
 #  MAIN
 # ------------------------------------------------------
 
-records = parse_neko_log(logfile)
-ds = records_to_xarray(records, outfile=outfile)
+records = parse_neko_log("/cfs/klemming/projects/snic/abl-les-ldl/Neko_v1_ABL_test_case/logfiles/log.run_20368308_2026-05-08_11-48-58")
+ds = records_to_xarray(records, outfile="/cfs/klemming/projects/snic/abl-les-ldl/Neko_v1_ABL_test_case/diag.nc")
+plot_all_timeseries(ds, n_el_x=16, n_el_y=16, lx1=8)
 
  
