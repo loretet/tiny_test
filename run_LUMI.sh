@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name=test_dp_openmp
 #SBATCH --account=project_465002526
-#SBATCH --time=0-02:05:00              
+#SBATCH --time=0-02:00:00              
 #SBATCH --partition=dev-g
 #SBATCH --nodes=1              # n. of nodes = ntasks/8. Modify only this for bigger runs
 #SBATCH --ntasks-per-node=8    # don't change this, it must be == to --gpus-per-node
@@ -26,7 +26,7 @@ echo "  Case File: $CASE_FILE"
 echo "  Neko Executable: $NEKO_COMP"
 echo "  Output Directory: $OUTPUT_DIR"
 
-ml CrayEnv cce/19.0.0 craype-accel-amd-gfx90a rocm/6.3.4 cray-python
+ml PrgEnv-gnu cray-mpich/9.0.1 craype-accel-amd-gfx90a rocm/6.3.4 cray-python cray-hdf5-parallel/1.14.3.5
 export OMP_NUM_THREADS=2
 export MPICH_GPU_SUPPORT_ENABLED=1
 export NEKO_GS_STRTGY=3
