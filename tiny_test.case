@@ -42,7 +42,7 @@
             "pressure_solver": {
                 "type": "gmres",
                 "preconditioner": {
-                    "type": "hsmg"
+                    "type": "phmg"
                 },
                 "projection_space_size": 0,
                 "absolute_tolerance": 1e-5,
