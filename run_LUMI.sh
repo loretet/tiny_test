@@ -1,21 +1,23 @@
 #!/bin/bash -l
-#SBATCH --job-name=test_dp_openmp
+#SBATCH --job-name=test_sp_dp
 #SBATCH --account=project_465002526
-#SBATCH --time=0-02:00:00              
+#SBATCH --time=0-01:59:50              
 #SBATCH --partition=dev-g
-#SBATCH --nodes=1              # n. of nodes = ntasks/8. Modify only this for bigger runs
+#SBATCH --nodes=8              # n. of nodes = ntasks/8. Modify only this for bigger runs
 #SBATCH --ntasks-per-node=8    # don't change this, it must be == to --gpus-per-node
 #SBATCH --gpus-per-node=8      # don't change this, it must be == to --ntasks-per-node  
 #SBATCH --cpus-per-task=7      # n. of processessors per task. Don't change this, it must be >= OMP_NUM_THREADS        
 
-CASE_FILE="abl_test.case"
-NEKO_COMP="neko_dp"
-OUTPUT_DIR="output_dp"
+CASE_FILE="${CASE_FILE:-shear_convection_abl.case}"
+MESH_FILE="${MESH_FILE:-n08.nmsh}"
+NEKO_EXEC="${NEKO_EXEC:-neko_dp}"
+OUTPUT_DIR="${OUTPUT_DIR:-/scratch/project_465002526/lorenzol/openmp_test_output/dp}"
+LOG_DIR="${LOG_DIR:-/scratch/project_465002526/lorenzol/openmp_test_output/logfiles/}"
 
 echo "Running Neko with the following settings:"
 echo "  Job Name: $SLURM_JOB_NAME"
 echo "  Account: $SLURM_ACCOUNT"
-echo "  Time Limit: $SLURM_TIME"
+echo "  Time Limit: $SLURM_TIME"    
 echo "  Partition: $SLURM_PARTITION"
 echo "  Nodes: $SLURM_NNODES"
 echo "  Tasks per Node: $SLURM_NTASKS_PER_NODE"
@@ -23,10 +25,16 @@ echo "  GPUs per Node: $SLURM_GPUS_PER_NODE"
 echo "  CPUs per Task: $SLURM_CPUS_PER_TASK"
 echo "  "
 echo "  Case File: $CASE_FILE"
-echo "  Neko Executable: $NEKO_COMP"
+echo "  Neko Executable: $NEKO_EXEC"
 echo "  Output Directory: $OUTPUT_DIR"
 
-ml PrgEnv-gnu cray-mpich/9.0.1 craype-accel-amd-gfx90a rocm/6.3.4 cray-python cray-hdf5-parallel/1.14.3.5
+ml CrayEnv cce/19.0.0 craype-accel-amd-gfx90a rocm/6.3.4 cray-python
+
+# Load modules for the GNU CPU environment
+# # OPENMP BUG FIX! # #
+ml PrgEnv-gnu cray-mpich/9.0.1
+ml craype-accel-amd-gfx90a rocm/6.3.4
+
 export OMP_NUM_THREADS=2
 export MPICH_GPU_SUPPORT_ENABLED=1
 export NEKO_GS_STRTGY=3
@@ -55,8 +63,8 @@ else
     echo "Large case detected. Applying optimized hex masks."
 fi
 
-if [ ! -d logfiles ]; then
-    mkdir logfiles
+if [ ! -d $LOG_DIR ]; then
+    mkdir $LOG_DIR
 fi
 
 if [ ! -d ${OUTPUT_DIR} ]; then
@@ -75,6 +83,11 @@ EOF
 chmod +x ./select_gpu
 
 d="$(date +%F_%H-%M-%S)"
-srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_COMP} ${CASE_FILE} > logfiles/log.run_${d} 2>&1
+
+jq --arg p "$OUTPUT_DIR" '.case.output_directory = $p' $CASE_FILE > tmp.case && mv tmp.case $CASE_FILE
+jq --arg q "$MESH_FILE" '.case.mesh_file = $q' $CASE_FILE > tmp.case && mv tmp.case $CASE_FILE
+
+srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_EXEC} ${CASE_FILE} > $LOG_DIR/log.run_$NEKO_EXEC 2>&1
+
 rm -rf ./select_gpu
 mv *0.* ${OUTPUT_DIR}
