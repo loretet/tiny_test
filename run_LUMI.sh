@@ -9,10 +9,10 @@
 #SBATCH --cpus-per-task=7      # n. of processessors per task. Don't change this, it must be >= OMP_NUM_THREADS        
 
 CASE_FILE="${CASE_FILE:-shear_convection_abl.case}"
-MESH_FILE="${MESH_FILE:-n08.nmsh}"
+MESH_FILE="${MESH_FILE:-/projappl/project_465002526/lorenzol/meshes/n32.nmsh}"
 NEKO_EXEC="${NEKO_EXEC:-neko_dp}"
-OUTPUT_DIR="${OUTPUT_DIR:-/scratch/project_465002526/lorenzol/openmp_test_output/dp}"
-LOG_DIR="${LOG_DIR:-/scratch/project_465002526/lorenzol/openmp_test_output/logfiles/}"
+OUTPUT_DIR="${OUTPUT_DIR:-/scratch/project_465002526/lorenzol/sp_vs_dp/n32/1K/dp}"
+LOG_DIR="${LOG_DIR:-/scratch/project_465002526/lorenzol/sp_vs_dp/logfiles/}"
 
 echo "Running Neko with the following settings:"
 echo "  Job Name: $SLURM_JOB_NAME"
@@ -84,8 +84,8 @@ chmod +x ./select_gpu
 
 d="$(date +%F_%H-%M-%S)"
 
-jq --arg p "$OUTPUT_DIR" '.case.output_directory = $p' $CASE_FILE > tmp.case && mv tmp.case $CASE_FILE
-jq --arg q "$MESH_FILE" '.case.mesh_file = $q' $CASE_FILE > tmp.case && mv tmp.case $CASE_FILE
+sed -i "s|\"output_directory\":.*|\"output_directory\": \"$OUTPUT_DIR\",|g" "$CASE_FILE"
+sed -i "s|\"mesh_file\":.*|\"mesh_file\": \"$MESH_FILE\",|g" "$CASE_FILE"
 
 srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_EXEC} ${CASE_FILE} > $LOG_DIR/log.run_$NEKO_EXEC 2>&1
 
