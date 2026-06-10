@@ -148,6 +148,45 @@
                     "max_iterations": 800
                 }
             },
+{
+                "name": "cloud_example",
+                "enabled": true,
+                "cp": "cp",
+                "lambda": "mu",
+                "initial_condition": {
+                    "type": "user"
+                },
+                "boundary_conditions": [
+                    {
+                        "type": "dirichlet",
+                        "value": 0.0,
+                        "zone_indices": [
+                            6
+                        ]
+                    },
+                    {
+                        "type": "dirichlet",
+                        "value": 0.0,
+                        "zone_indices": [
+                            5
+                        ]
+                    }
+				],
+                "alphat":{
+                    "nut_dependency": true,
+                    "nut_field": "temperature_alphat",
+					"Pr_t": 1.0,
+                },
+                "solver": {
+                    "type": "cg",
+                    "preconditioner": {
+                        "type": "jacobi"
+                    },
+                    "projection_space_size": 0,
+                    "absolute_tolerance": 1e-7,
+                    "max_iterations": 800
+                }
+            },
             {
                 "name": "TKE",
                 "enabled": true,
@@ -222,7 +261,33 @@
                 "start_time": 10000.0,
                 "avg_direction": "xy",
 		         "set_of_stats": "basic"
-             }
+             },
+            {
+                "type": "scalar_stats",
+                "field": "cloud_example",
+                "compute_control": "simulationtime",
+                "compute_value": 10.0,
+                "output_control": "simulationtime",
+                "output_value": 500.0,
+                "start_time": 0.0,
+                "avg_direction": "xy",
+		        "set_of_stats": "basic"
+            },
+            {
+                "type": "scalar_sgs_stats",
+                "field": "cloud_example",
+                "alphat":{
+                    "nut_dependency": true,
+                    "nut_field": "temperature_alphat",
+                    "Pr_t": 1.0
+                },
+                "compute_control": "simulationtime",
+                "compute_value": 10.0,
+                "output_control": "simulationtime",
+                "output_value": 500.0,
+                "start_time": 0.0,
+                "avg_direction": "xy"
+            } 
         ],
         "constants":
         [
