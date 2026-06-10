@@ -130,7 +130,7 @@ contains
                 s%x(i,1,1,1) = theta1 + gamma_theta * (z - z2)
              endif
           end do
-       elseif (scheme_name .eq. 'TKE') then
+      celseif (scheme_name .eq. 'TKE') then
           do i = 1, s%dof%size()
              z = s%dof%z(i,1,1,1)
              if (z .le. ze) then
@@ -139,7 +139,20 @@ contains
                 s%x(i,1,1,1) = 0.0_rp
              endif
           end do
-       endif
+       elseif (scheme_name .eq. 'cloud_example') then
+          do i = 1, s%dof%size()
+             z = s%dof%z(i,1,1,1)
+             if (z .le. 700.0_rp .and. z .gt. 650.0_rp) then
+                s%x(i,1,1,1) = 1.0
+             elseif (z .le. 650.0_rp .and. z .gt. 550.0_rp) then
+                s%x(i,1,1,1) = 0.0 + (z-550.0_rp)/100.0_rp
+             elseif (z .le. 800.0_rp .and. z .gt. 700.0_rp) then
+                s%x(i,1,1,1) = 1.0 - (z-700.0_rp)/100.0_rp
+             else
+                s%x(i,1,1,1) = 0.0_rp
+             endif
+          end do
+        endif
     endif
   end subroutine user_ic
 
