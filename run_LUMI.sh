@@ -1,18 +1,22 @@
 #!/bin/bash -l
-#SBATCH --job-name=test_sp_dp
+#SBATCH --job-name=test_00
 #SBATCH --account=project_465002526
-#SBATCH --time=0-01:59:50              
-#SBATCH --partition=dev-g
-#SBATCH --nodes=8              # n. of nodes = ntasks/8. Modify only this for bigger runs
+#SBATCH --time=0-20:17:00              
+#SBATCH --partition=standard-g
+#SBATCH --nodes=12              # n. of nodes = ntasks/8. Modify only this for bigger runs
 #SBATCH --ntasks-per-node=8    # don't change this, it must be == to --gpus-per-node
 #SBATCH --gpus-per-node=8      # don't change this, it must be == to --ntasks-per-node  
 #SBATCH --cpus-per-task=7      # n. of processessors per task. Don't change this, it must be >= OMP_NUM_THREADS        
 
-CASE_FILE="${CASE_FILE:-shear_convection_abl.case}"
-MESH_FILE="${MESH_FILE:-/projappl/project_465002526/lorenzol/meshes/n32.nmsh}"
-NEKO_EXEC="${NEKO_EXEC:-neko_dp}"
-OUTPUT_DIR="${OUTPUT_DIR:-/scratch/project_465002526/lorenzol/sp_vs_dp/n32/1K/dp}"
-LOG_DIR="${LOG_DIR:-/scratch/project_465002526/lorenzol/sp_vs_dp/logfiles/}"
+casename="lat15_deg00_"
+mesh="n80"
+
+
+CASE_FILE="${casename}.case"
+MESH_FILE="/scratch/project_465002526/lorenzol/meshes/${mesh}.nmsh"
+NEKO_EXEC="neko_${casename}"
+OUTPUT_DIR="/scratch/project_465002526/lorenzol/coriolis/${mesh}/${casename}/"
+LOG_DIR="/scratch/project_465002526/lorenzol/coriolis/${mesh}/logfiles/"
 
 echo "Running Neko with the following settings:"
 echo "  Job Name: $SLURM_JOB_NAME"
@@ -86,8 +90,10 @@ d="$(date +%F_%H-%M-%S)"
 
 sed -i "s|\"output_directory\":.*|\"output_directory\": \"$OUTPUT_DIR\",|g" "$CASE_FILE"
 sed -i "s|\"mesh_file\":.*|\"mesh_file\": \"$MESH_FILE\",|g" "$CASE_FILE"
+SBATCH_TIME=$(grep "#SBATCH --time=" "$0" | cut -d'=' -f2)
+sed -i "s|\"job_timelimit\":.*|\"job_timelimit\": \"$SBATCH_TIME\",|g" "$CASE_FILE"
 
-srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_EXEC} ${CASE_FILE} > $LOG_DIR/log.run_$NEKO_EXEC 2>&1
+srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_EXEC} ${CASE_FILE} > $LOG_DIR/log.run_$casename 2>&1
 
 rm -rf ./select_gpu
 mv *0.* ${OUTPUT_DIR}
