@@ -5,6 +5,7 @@
         "output_at_end": true,
         "output_checkpoints": false,
         "output_directory": "output_MOST_GPU",
+		"job_timelimit": "0-12:07:18",
         "checkpoint_control": "simulationtime",
         "checkpoint_value": 1000.0,
         "output_boundary": false,
