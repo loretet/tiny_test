@@ -11,7 +11,6 @@
 casename="lat15_deg00_"
 mesh="n80"
 
-
 CASE_FILE="${casename}.case"
 MESH_FILE="/scratch/project_465002526/lorenzol/meshes/${mesh}.nmsh"
 NEKO_EXEC="neko_${casename}"
@@ -97,3 +96,4 @@ srun -u --cpu-bind=${BIND_SETTING},verbose ./select_gpu ./${NEKO_EXEC} ${CASE_FI
 
 rm -rf ./select_gpu
 mv *0.* ${OUTPUT_DIR}
+./users/lorenzol/scripts/clean_csv.sh ${OUTPUT_DIR}
